@@ -1,4 +1,4 @@
-// pages/user.tsx
+"use client"
 import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
