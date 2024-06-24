@@ -1,7 +1,6 @@
 // pages/user.tsx
 import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
-import { User as ClerkUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 
 interface User {
