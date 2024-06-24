@@ -1,7 +1,7 @@
 // pages/api/get-users.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { connect } from '@/lib/mongodb';
-import User from '@/lib/models/user.model';
+import User from '@/lib/modals/user.model';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
