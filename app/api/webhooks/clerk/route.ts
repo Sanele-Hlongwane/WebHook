@@ -4,6 +4,7 @@ import { WebhookEvent, clerkClient } from "@clerk/clerk-sdk-node";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { createUser } from "@/lib/actions/user.action";
+import { sendUserEvent } from "@/app/api/user-events";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -68,6 +69,9 @@ export async function POST(req: Request) {
           userId: newUser._id,
         },
       });
+
+      // Send user event to clients
+      sendUserEvent(newUser);
     }
 
     return NextResponse.json({ message: "New user created", user: newUser });

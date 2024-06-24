@@ -2,7 +2,7 @@
 
 import mongoose, { Mongoose } from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI; // Your MongoDB connection string
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
@@ -33,7 +33,7 @@ export const connect = async (): Promise<Mongoose> => {
     }).then((mongoose) => {
       return mongoose;
     }).catch((error) => {
-      cached.promise = null; // Reset promise cache in case of an error
+      cached.promise = null;
       throw error;
     });
   }
