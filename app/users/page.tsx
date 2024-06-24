@@ -1,3 +1,4 @@
+"use client"
 // pages/user.tsx
 import { useEffect, useState } from 'react';
 
