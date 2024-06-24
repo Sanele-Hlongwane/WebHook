@@ -11,12 +11,11 @@ interface MenuItem {
   path: string;
 }
 
-const NavBar = ({ handleToggleBlur }: { handleToggleBlur: (blur: boolean) => void }) => {
+const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
-    handleToggleBlur(!isOpen); // Toggle blur effect
   };
 
   const menuItems: MenuItem[] = [
