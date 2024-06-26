@@ -64,13 +64,11 @@ export async function POST(req: Request) {
 
     console.log("New user data:", user);
 
-    // Timing MongoDB connection
     console.time("MongoDB Connection");
     try {
       await connect();
       console.timeEnd("MongoDB Connection");
 
-      // Timing user creation
       console.time("User Creation");
       const newUser = await createUser(user);
       console.timeEnd("User Creation");
