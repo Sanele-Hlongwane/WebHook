@@ -28,9 +28,9 @@ const Footer = () => {
               Services
             </div>
           </Link>
-          <Link href="/contact">
+          <Link href="/users">
             <div className="text-lg mb-4 lg:mb-0 hover:text-gray-400 cursor-pointer">
-              Contact
+              Users
             </div>
           </Link>
         </div>

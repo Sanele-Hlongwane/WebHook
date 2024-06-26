@@ -1,10 +1,9 @@
-//app/webhooks/clerk
-
+// app/api/webhooks/clerk/route.ts
 import { Webhook } from "svix";
 import { WebhookEvent, clerkClient } from "@clerk/clerk-sdk-node";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { createUser } from "@/lib/actions/user.action";
+import { connect } from "@/lib/mongodb";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -13,38 +12,31 @@ export async function POST(req: Request) {
     throw new Error('Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local');
   }
 
-  // Get the headers
-  const headerPayload = headers();
-  const svix_id = headerPayload.get("svix-id");
-  const svix_timestamp = headerPayload.get("svix-timestamp");
-  const svix_signature = headerPayload.get("svix-signature");
+  const headers = req.headers;
+  const svix_id = headers.get("svix-id");
+  const svix_timestamp = headers.get("svix-timestamp");
+  const svix_signature = headers.get("svix-signature");
 
-  // If there are no headers, error out
+  console.log("svix-id:", svix_id);
+  console.log("svix-timestamp:", svix_timestamp);
+  console.log("svix-signature:", svix_signature);
+
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error occurred -- no svix headers', {
-      status: 400
-    });
+    return new Response('Error occurred -- no svix headers', { status: 400 });
   }
 
-  // Get the body
-  let payload;
+  let payload: any;
   try {
     payload = await req.json();
   } catch (err) {
     console.error('Error parsing JSON:', err);
-    return new Response('Invalid JSON', {
-      status: 400
-    });
+    return new Response('Invalid JSON', { status: 400 });
   }
 
   const body = JSON.stringify(payload);
-
-  // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET);
 
   let evt: WebhookEvent;
-
-  // Verify the payload with the headers
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
@@ -53,13 +45,9 @@ export async function POST(req: Request) {
     }) as WebhookEvent;
   } catch (err) {
     console.error('Error verifying webhook:', err);
-    return new Response('Error occurred', {
-      status: 400
-    });
+    return new Response('Error occurred', { status: 400 });
   }
 
-  // Handle the event
-  const { id } = evt.data;
   const eventType = evt.type;
 
   if (eventType === "user.created") {
@@ -74,22 +62,35 @@ export async function POST(req: Request) {
       photo: image_url,
     };
 
-    console.log(user);
+    console.log("New user data:", user);
 
-    const newUser = await createUser(user);
+    // Timing MongoDB connection
+    console.time("MongoDB Connection");
+    try {
+      await connect();
+      console.timeEnd("MongoDB Connection");
 
-    if (newUser) {
-      await clerkClient.users.updateUserMetadata(id, {
-        publicMetadata: {
-          userId: newUser._id,
-        },
-      });
+      // Timing user creation
+      console.time("User Creation");
+      const newUser = await createUser(user);
+      console.timeEnd("User Creation");
+
+      if (newUser) {
+        await clerkClient.users.updateUserMetadata(id, {
+          publicMetadata: {
+            userId: newUser._id,
+          },
+        });
+      }
+
+      return NextResponse.json({ message: "New user created", user: newUser });
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      return new Response('Error occurred', { status: 500 });
     }
-
-    return NextResponse.json({ message: "New user created", user: newUser });
   }
 
-  console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
+  console.log(`Webhook with an ID of ${evt.data.id} and type of ${eventType}`);
   console.log('Webhook body:', body);
 
   return new Response('', { status: 200 });

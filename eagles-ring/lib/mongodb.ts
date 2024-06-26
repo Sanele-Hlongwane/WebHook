@@ -1,5 +1,4 @@
-//lib/mongodb.ts
-
+// lib/mongodb.ts
 import mongoose, { Mongoose } from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI; // Your MongoDB connection string
